@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Fire Detection Result</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        background-color: #f4f4f4;
+        background-image: url("static/images/f1.jpg");
+        margin: 0;
+        padding: 0;
+      }
+
+      .container {
+        width: 80%;
+        margin: 100px auto; /* Center the container */
+        background-image: url("static/images/f6.jpg");
+        padding: 20px;
+        background-color: #fff;
+        border-radius: 8px;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        background-size: cover; /* Ensure the entire background image is covered */
+        background-position: center; /* Center the background image */
+      }
+
+      h2 {
+        text-align: center;
+        color: #333; /* Dark gray color */
+      }
+
+      .result {
+        margin-bottom: 20px;
+      }
+
+      .result p {
+        margin: 5px 0;
+        color: #555; /* Medium gray color */
+      }
+
+      img {
+        display: block;
+        margin: 20px auto; /* Adjust margin to provide space */
+        width: 300px; /* Constant width */
+        height: auto; /* To maintain aspect ratio */
+        border-radius: 8px;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <h2>Fire Detection Result</h2>
+
+      {% if fire_detected and smoke_detected %}
+      <div class="result">
+        <p style="color: #d9534f">Fire and Smoke detected in {{ city }}</p>
+      </div>
+      {% elif fire_detected %}
+      <div class="result">
+        <p style="color: #d9534f">Fire detected in {{ city }}</p>
+      </div>
+      {% elif smoke_detected %}
+      <div class="result">
+        <p style="color: #d9534f">Smoke detected in {{ city }}</p>
+      </div>
+      {% else %}
+      <p>No fire detected in {{ city }}</p>
+      {% endif %} {% if weather_data is defined %}
+      <div class="result">
+        <p style="color: #5bc0de">
+          Estimated Fire Area: {{ estimated_area }} sq. km
+        </p>
+        <p>Weather Details in {{ city }}:</p>
+        <p>Temperature: {{ weather_data.main.temp }}°C</p>
+        <p>Humidity: {{ weather_data.main.humidity }}%</p>
+        <p>Wind Speed: {{ weather_data.wind.speed }} m/s</p>
+      </div>
+      {% endif %}
+
+      <img src="static{{ image_path }}" alt="Uploaded Image" />
+    </div>
+  </body>
+</html>

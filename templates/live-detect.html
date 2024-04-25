@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Live Video Capture</title>
+    <style>
+      /* Unchanged styles remain black */
+      body {
+        font-family: Arial, sans-serif;
+        background-color: #f4f4f4;
+        margin: 0;
+        padding: 0;
+        background-image: url("static/images/f1.jpg");
+        display: flex; /* Use flexbox to arrange items */
+        justify-content: center; /* Center content horizontally */
+        align-items: center; /* Center content vertically */
+        height: 100vh; /* Full viewport height */
+      }
+
+      .video-container,
+      .message-container {
+        width: 30%; /* Adjust width as needed */
+        max-height: 400px; /* Limit container height */
+        overflow-y: auto; /* Enable vertical scrolling */
+        padding: 10px; /* Add padding */
+        background-color: #fff; /* White background */
+        border-radius: 8px; /* Rounded corners */
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1); /* Box shadow */
+        background-image: url("static/images/f6.jpg"); /* Background image */
+        background-size: cover; /* Cover background */
+      }
+
+      .video-container {
+        margin-right: 20px; /* Add space between video and message container */
+      }
+
+      #live-video {
+        width: calc(100% - 20px); /* Full width with padding */
+        height: auto; /* Maintain aspect ratio */
+        margin-bottom: 10px; /* Add space below video */
+      }
+
+      .message {
+        margin-bottom: 10px; /* Add margin between messages */
+      }
+
+      .error-message {
+        color: red;
+        margin-top: 10px;
+        text-align: center;
+      }
+
+      .latest-message {
+        margin-bottom: 10px; /* Add margin below latest message */
+      }
+
+      h2 {
+        color: black; /* Set text color to white */
+      }
+    </style>
+  </head>
+  <body>
+    <div class="video-container">
+      <h2>Live Fire Detection</h2>
+      <video id="live-video" autoplay></video>
+    </div>
+    <div class="message-container">
+      <h2>Current Result</h2>
+      <div id="latest-message" class="latest-message"></div>
+    </div>
+    <div class="message-container">
+      <h2>History</h2>
+      <div id="message-container" class="messages"></div>
+    </div>
+
+    <script>
+      const video = document.getElementById("live-video");
+      const latestMessageContainer = document.getElementById("latest-message");
+      const messageContainer = document.getElementById("message-container");
+      const messages = [];
+
+      navigator.mediaDevices
+        .getUserMedia({ video: true })
+        .then((stream) => {
+          video.srcObject = stream;
+        })
+        .catch((error) => {
+          console.error("Error accessing camera:", error);
+        });
+
+      function captureAndSendImage() {
+        const canvas = document.createElement("canvas");
+        const context = canvas.getContext("2d");
+
+        canvas.width = video.videoWidth;
+        canvas.height = video.videoHeight;
+
+        context.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+        canvas.toBlob(function (blob) {
+          const file = new File([blob], "image.jpg", { type: "image/jpeg" });
+          const formData = new FormData();
+          formData.append("image", file);
+
+          fetch("/detect-fire", {
+            method: "POST",
+            body: formData,
+          })
+            .then((response) => {
+              if (response.ok) {
+                return response.json();
+              } else {
+                console.error("Failed to send image");
+                messages.push("Error: Unable to send image.");
+                updateMessages();
+                return Promise.reject(new Error("Failed to send image")); // Reject for error handling
+              }
+            })
+            .then((data) => {
+              messages.push(data.message);
+              updateMessages();
+            })
+            .catch((error) => {
+              console.error("Error:", error);
+              messages.push("Error: Unable to detect fire.");
+              updateMessages();
+            });
+        }, "image/jpeg");
+      }
+
+      function updateMessages() {
+        const latestMessage = messages[messages.length - 1];
+        latestMessageContainer.innerText = latestMessage;
+
+        const otherMessages = messages.slice(0, -1);
+        const messageList = otherMessages
+          .map((message) => `<div class="message">${message}</div>`)
+          .join("");
+        messageContainer.innerHTML = messageList;
+
+        messageContainer.scrollTop = messageContainer.scrollHeight;
+      }
+
+      setInterval(captureAndSendImage, 5000);
+
+      captureAndSendImage();
+    </script>
+  </body>
+</html>
