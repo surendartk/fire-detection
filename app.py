@@ -33,7 +33,7 @@ def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
 
-api_key = '932bf300eb9e17980c2120509abd0070'
+api_key = '*********************************'
 
 
 def get_weather_data(api_key, city):
