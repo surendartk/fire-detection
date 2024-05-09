@@ -1,5 +1,7 @@
 
-from PIL import Image
+
+from geopy.geocoders import Nominatim
+import geocoder
 import datetime
 from flask import jsonify
 from datetime import datetime
@@ -34,6 +36,63 @@ def allowed_file(filename):
 
 
 api_key = '932bf300eb9e17980c2120509abd0070'
+
+
+geolocator = Nominatim(user_agent="my_geocoder")
+
+
+def get_city_name(latitude, longitude):
+    location = geolocator.reverse((latitude, longitude))
+    if location and 'address' in location.raw:
+        address = location.raw['address']
+        city = address.get('city', '')
+        if not city:
+            city = address.get('town', '')
+        if not city:
+            city = address.get('village', '')
+        return city
+    else:
+        return None
+
+
+geolocator = Nominatim(user_agent="my_geocoder")
+
+
+def get_live_location():
+    location = geocoder.ip('me')
+    if location:
+        return location.latlng
+    else:
+        return None
+
+
+def get_city_name(latitude, longitude):
+    location = geolocator.reverse((latitude, longitude))
+    if location and 'address' in location.raw:
+        address = location.raw['address']
+        city = address.get('city', '')
+        if not city:
+            city = address.get('town', '')
+        if not city:
+            city = address.get('village', '')
+        return city
+    else:
+        return None
+
+
+latitude, longitude = get_live_location()
+
+if latitude is not None and longitude is not None:
+    print("Latitude:", latitude)
+    print("Longitude:", longitude)
+
+    city1 = get_city_name(latitude, longitude)
+    if city1:
+        print("City Name:", city1)
+    else:
+        print("Failed to retrieve city name.")
+else:
+    print("Failed to retrieve live location.")
 
 
 def get_weather_data(api_key, city):
@@ -216,7 +275,10 @@ def detect_fire():
                 elif box.cls == 1:
                     smoke_detected = True
 
-        message = prepare_message(fire_detected, smoke_detected)
+        estimated_area = predict_fire_area(api_key, city1)
+
+        message = prepare_message(
+            fire_detected, smoke_detected, estimated_area)
         print(message)
         return jsonify({"fire_detected": fire_detected, "smoke_detected": smoke_detected, "message": message})
 
@@ -225,17 +287,17 @@ def detect_fire():
         return jsonify({"message": "Internal server error"}), 500
 
 
-def prepare_message(fire_detected, smoke_detected):
+def prepare_message(fire_detected, smoke_detected, estimated_area):
     """Prepares a message based on detection results."""
     now = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
     if fire_detected and smoke_detected:
-        message = f"fire and smoke detected at {now}"
+        message = f"fire && smoke at {now},Est area is {estimated_area} in {city1}"
     elif fire_detected:
-        message = f"Fire detected at {now}"
+        message = f"Fire at {now} , Est area is {estimated_area} in {city1}"
     elif smoke_detected:
-        message = f"Smoke detected at {now}"
+        message = f"Smoke at {now} ,Est area is {estimated_area} in {city1}"
     else:
-        message = f"No fire or smoke detected at {now}"
+        message = f"no fire and smoke"
     return message
 
 
