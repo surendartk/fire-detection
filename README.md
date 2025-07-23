@@ -30,10 +30,6 @@ This Flask-based web application detects fire and smoke from uploaded images usi
 
 ---
 
-## 📁 Folder Structure
-
-
----
 
 ## 🛠️ Installation & Setup
 
@@ -43,14 +39,10 @@ This Flask-based web application detects fire and smoke from uploaded images usi
 git clone https://github.com/your-username/fire-detection-app.git
 cd fire-detection-app
 
-
 python -m venv venv
 source venv/bin/activate  # On Windows: venv\Scripts\activate
 
-
-
 pip install -r requirements.txt
-
 
 api_key = '*********************************'
 
