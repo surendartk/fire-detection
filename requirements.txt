@@ -1,0 +1,8 @@
+flask
+geopy
+geocoder
+requests
+ultralytics
+xgboost
+pandas
+jinja2
